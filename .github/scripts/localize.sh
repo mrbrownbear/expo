@@ -18,6 +18,7 @@ fetch_file() {
 }
 
 fetch_file "$SOURCE/" "index.html"
+fetch_file "$SOURCE/accessible" "accessible.html"
 fetch_file "$SOURCE/manifest.json" "manifest.json"
 fetch_file "$SOURCE/build/main.js?h=$HASH" "build/main.js"
 fetch_file "$SOURCE/assets/packs/webgl.pack?h=$HASH" "assets/packs/webgl.pack"
@@ -174,8 +175,7 @@ python3 <<'PY'
 from pathlib import Path
 import re
 
-path = Path("index.html")
-html = path.read_text(encoding="utf-8")
+SOURCE = "https://expo.dmlainfo.fr"
 
 csp = (
     '<meta http-equiv="Content-Security-Policy" '
@@ -194,27 +194,42 @@ csp = (
     '<script src="/__sitecloner/runtime.js"></script>'
 )
 
-if "/__sitecloner/runtime.js" not in html:
-    html = html.replace("<head>", "<head>" + csp, 1)
+def localize_html(filename):
+    path = Path(filename)
+    html = path.read_text(encoding="utf-8")
 
-html = re.sub(r'window\.gaID="[^"]*"', 'window.gaID=""', html, count=1)
-html = re.sub(
-    r'window\.formAPIUrl="[^"]*"',
-    'window.formAPIUrl="/__sitecloner/blocked"',
-    html,
-    count=1
-)
+    html = html.replace(SOURCE, "")
 
-if not Path("images/share.png").exists():
-    html = re.sub(r'<meta property="og:image"[^>]*>', '', html)
-    html = re.sub(r'<meta name="twitter:image"[^>]*>', '', html)
+    if "/__sitecloner/runtime.js" not in html:
+        html = html.replace("<head>", "<head>" + csp, 1)
 
-path.write_text(html, encoding="utf-8")
+    html = re.sub(r'window\.gaID="[^"]*"', 'window.gaID=""', html, count=1)
+    html = re.sub(
+        r'window\.formAPIUrl="[^"]*"',
+        'window.formAPIUrl="/__sitecloner/blocked"',
+        html,
+        count=1
+    )
+
+    if not Path("images/share.png").exists():
+        html = re.sub(r'<meta property="og:image"[^>]*>', '', html)
+        html = re.sub(r'<meta name="twitter:image"[^>]*>', '', html)
+
+    path.write_text(html, encoding="utf-8")
+
+localize_html("index.html")
+localize_html("accessible.html")
 PY
 
 cat > vercel.json <<'JSON'
 {
   "cleanUrls": false,
+  "rewrites": [
+    {
+      "source": "/accessible",
+      "destination": "/accessible.html"
+    }
+  ],
   "headers": [
     {
       "source": "/assets/packs/(.*)",
@@ -243,6 +258,7 @@ cat > vercel.json <<'JSON'
 JSON
 
 test -s index.html
+test -s accessible.html
 test -s build/main.js
 test -s assets/packs/webgl.pack
 test -s assets/packs/audio.pack
@@ -252,18 +268,20 @@ test -s docs/cgu.pdf
 test -s docs/cookies.pdf
 
 if grep -RIn "expo\.dmlainfo\.fr" \
-  index.html build assets docs fonts images __sitecloner manifest.json vercel.json; then
+  index.html accessible.html build assets docs fonts images __sitecloner manifest.json vercel.json; then
   echo "Found a live source-domain reference in production files."
   exit 1
 fi
 
 grep -q '/build/main.js' index.html
 grep -q 'window.formAPIUrl="/__sitecloner/blocked"' index.html
+grep -q '/__sitecloner/runtime.js' index.html
+grep -q '/__sitecloner/runtime.js' accessible.html
 
 git config user.name "github-actions[bot]"
 git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-git add index.html manifest.json build assets docs fonts images __sitecloner vercel.json
+git add index.html accessible.html manifest.json build assets docs fonts images __sitecloner vercel.json
 
 if git diff --cached --quiet; then
   echo "Nothing to commit."
