@@ -10,7 +10,7 @@ fetch_file() {
   local url="$1"
   local output="$2"
   echo "Fetching $output"
-  curl --fail --location --silent --show-error \
+  curl --fail --location --silent --show-error --compressed \
     --retry 4 --retry-delay 2 \
     --user-agent "Mozilla/5.0" \
     "$url" -o "$output"
@@ -35,7 +35,7 @@ fetch_file "$SOURCE/images/mask-icon.svg" "images/mask-icon.svg"
 fetch_file "$SOURCE/docs/cgu.pdf" "docs/cgu.pdf"
 fetch_file "$SOURCE/docs/cookies.pdf" "docs/cookies.pdf"
 
-curl --fail --location --silent --show-error \
+curl --fail --location --silent --show-error --compressed \
   --retry 2 --retry-delay 2 \
   --user-agent "Mozilla/5.0" \
   "$SOURCE/images/share.png" \
