@@ -1,0 +1,11 @@
+{
+  "name": "DMLA – Dans tes yeux",
+  "short_name": "DMLA – Dans tes yeux",
+  "icons": [{
+      "src": "images/google-touch-icon.png",
+      "sizes": "512x512"
+  }],
+  "background_color": "#000000",
+  "theme_color": "#ffffff",
+  "display": "fullscreen"
+}
