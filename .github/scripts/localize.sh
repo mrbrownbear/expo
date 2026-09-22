@@ -42,7 +42,6 @@ curl --fail --location --silent --show-error \
   -o "images/share.png" || rm -f "images/share.png"
 
 cat > /tmp/expo.sha256 <<'HASHES'
-01bce45f41fa3be4e085f60ff645fef64b1a94771b7e13090b724f05d3bec1f7  manifest.json
 9261b1f98c165cff8f02175e9c8431afff6be852533b93fbaebbfe9ea4cdf68e  build/main.js
 0b5d36077654d60e6fffcbab341bc52c0a94040ccfb3c538ef8eac5862c3370c  assets/packs/webgl.pack
 1b5d578aea921321d9b3e416347efdab33d22bc85614d2e1c4ae71c6ff7912a3  assets/packs/audio.pack
